@@ -6,3 +6,5 @@ linter:
     directives_ordering: true
     prefer_relative_imports: true
     prefer_single_quotes: true
+    package_api_docs: true
+    public_member_api_docs: true

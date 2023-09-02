@@ -3,27 +3,60 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-/// Animated line through on the text.
+/// A widget that animate line through text.
+///
+/// State os cross-line is controlled by [isCrossed] parameter.
+///
+/// {@macro line_child}
+///
+/// For cases, when you need more control over animation,
+/// see [AnimatedLineThroughRaw] widget.
 class AnimatedLineThrough extends StatefulWidget {
   /// Child that should be crossed.
   ///
-  /// This child's [RenderBox] must be the [RenderParagraph].
-  /// Otherwise there is no effect.
+  /// @{macro line_child}
   final Widget child;
+
+  /// The color of cross-line itself.
+  ///
+  /// If null, then try to use [DefaultTextStyle] [TextStyle.color].
+  /// If this is also null, then use theme's [ColorScheme.onSurface].
+  final Color? color;
 
   /// Whenever is text should be crossed with line.
   final bool isCrossed;
 
+  /// The curve to apply when animating cross-line in.
+  ///
+  /// Defaults to [Curves.linear].
   final Curve curve;
+
+  /// The curve to apply when animating cross-line out.
+  ///
+  /// Defaults to null. In this case use [curve].
   final Curve? reverseCurve;
+
+  /// The duration over which to animate cross-line.
+  ///
+  /// Must not be null.
   final Duration duration;
+
+  /// The duration over which to animate cross-line when it's gone.
+  ///
+  /// Defaults to null. In this case use [duration].
   final Duration? reverseDuration;
 
+  /// Creates a animated line through.
+  ///
+  /// @{macro line_child}
+  ///
+  /// The values of [isCrossed] and [duration] must not be null.
   const AnimatedLineThrough({
     super.key,
     required this.child,
     required this.isCrossed,
     required this.duration,
+    this.color,
     this.curve = Curves.linear,
     this.reverseCurve,
     this.reverseDuration,
@@ -69,12 +102,13 @@ class _AnimatedLineThroughState extends State<AnimatedLineThrough>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final Color color = widget.color ??
+        DefaultTextStyle.of(context).style.color ??
+        Theme.of(context).colorScheme.onSurface;
 
     return AnimatedLineThroughRaw(
       crossed: _animation,
-      colorFrom: theme.colorScheme.primary,
-      colorTo: theme.colorScheme.onSurface,
+      color: color,
       child: widget.child,
     );
   }
@@ -88,36 +122,42 @@ class _AnimatedLineThroughState extends State<AnimatedLineThrough>
   }
 }
 
-/// Raw animated line through widget.
+/// Raw animated line through widget with given [Animation].
 ///
-/// Draw a cross lines above text of this child.
-/// Child's [RenderBox] must be the [RenderParagraph].
-/// Otherwise there is no effect.
+/// Useful for cases, when we need to clearly control state cross-line.
+/// For example, when we use animated line through in [staggered animations](https://docs.flutter.dev/ui/animations/staggered-animations).
 class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
   /// State of cross line above the child.
   final Animation<double> crossed;
 
-  /// The [Color] that shown when line is just starts to draw.
-  final Color colorFrom;
+  /// The color of cross-line itself.
+  final Color color;
 
-  /// The [Color] that shown when line is done to draw.
-  final Color colorTo;
-
+  /// Creates a raw animated line through.
+  ///
+  /// @{template line_child}
+  /// The [child] must not be null.
+  ///
+  /// The child must be a widget that use either [RenderParagraph]
+  /// or [RenderEditable] as render object.
+  ///
+  /// In most cases it's just [Text], [RichText], [TextField] or [TextFormField].
+  ///
+  /// If child is any other widget, then there is no effect.
+  /// @{endtemplate}
   const AnimatedLineThroughRaw({
     super.key,
     required this.crossed,
-    required this.colorFrom,
-    required this.colorTo,
+    required this.color,
     super.child,
-  });
+  }) : assert(child != null);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
     final isAroundTextField = child is TextField || child is TextFormField;
     return _AnimatedLineThroughRenderObject(
       crossed: crossed,
-      colorFrom: colorFrom,
-      colorTo: colorTo,
+      color: color,
       isAroundTextField: isAroundTextField,
     );
   }
@@ -129,9 +169,7 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
     _AnimatedLineThroughRenderObject renderObject,
   ) {
     super.updateRenderObject(context, renderObject);
-    renderObject
-      ..colorFrom = colorFrom
-      ..colorTo = colorTo;
+    renderObject.color = color;
   }
 }
 
@@ -151,13 +189,8 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
 class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   final Animation<double> crossed;
 
-  /// Color that used as the color of the line on t = [0, 0.5].
-  /// Also used as color to interpolate when t = [0.5, 1].
-  Color colorFrom;
-
-  /// Color that used as the color of the line on t = 1.
-  /// Also used as color to interpolate when t = [0.5, 1].
-  Color colorTo;
+  /// Color that used as the color of the cross line.
+  Color color;
 
   /// A flag that indicates if child of the widget is [TextField] or [TextFormField].
   ///
@@ -204,8 +237,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
 
   _AnimatedLineThroughRenderObject({
     required this.crossed,
-    required this.colorFrom,
-    required this.colorTo,
+    required this.color,
     required this.isAroundTextField,
     RenderBox? child,
   }) : super(child) {
@@ -232,14 +264,6 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
         offset += _editableOffset!;
       }
 
-      final Color color;
-      // For case when we doesn't want to interpolate line color
-      if (colorFrom.value == colorTo.value) {
-        color = colorFrom;
-      } else {
-        final colorT = (crossed.value - 0.5) * 2;
-        color = Color.lerp(colorFrom, colorTo, colorT)!;
-      }
       _paint.color = color;
 
       double currentWidth = _fullTextWidth * crossed.value;
@@ -321,7 +345,6 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     );
     painter.layout(maxWidth: textSize.width);
 
-    // We mirroring metrics variable, so don't need to check for nullability here
     final metrics = painter.computeLineMetrics();
     _metrics = metrics;
     _fullTextWidth = metrics.fold<double>(0, (p, metric) => p + metric.width);
