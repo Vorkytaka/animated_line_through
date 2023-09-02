@@ -7,7 +7,16 @@ import 'package:flutter/rendering.dart';
 ///
 /// State os cross-line is controlled by [isCrossed] parameter.
 ///
-/// {@macro line_child}
+/// @{template line_child}
+/// The [child] must not be null.
+///
+/// The child must be a widget that use either [RenderParagraph]
+/// or [RenderEditable] as render object.
+///
+/// In most cases it's just [Text], [RichText], [TextField] or [TextFormField].
+///
+/// If child is any other widget, then there is no effect.
+/// @{endtemplate}
 ///
 /// For cases, when you need more control over animation,
 /// see [AnimatedLineThroughRaw] widget.
@@ -135,16 +144,7 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
 
   /// Creates a raw animated line through.
   ///
-  /// @{template line_child}
-  /// The [child] must not be null.
-  ///
-  /// The child must be a widget that use either [RenderParagraph]
-  /// or [RenderEditable] as render object.
-  ///
-  /// In most cases it's just [Text], [RichText], [TextField] or [TextFormField].
-  ///
-  /// If child is any other widget, then there is no effect.
-  /// @{endtemplate}
+  /// @{macro line_child}
   const AnimatedLineThroughRaw({
     super.key,
     required this.crossed,
