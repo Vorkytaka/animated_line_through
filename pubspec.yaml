@@ -1,7 +1,9 @@
 name: animated_line_through
 description: Animated line through for text
 version: 1.0.0
-#homepage:
+homepage: https://github.com/Vorkytaka/animated_line_through
+repository: https://github.com/Vorkytaka/animated_line_through
+issue_tracker: https://github.com/Vorkytaka/animated_line_through/issues
 
 environment:
   sdk: '>=2.17.0 <4.0.0'
