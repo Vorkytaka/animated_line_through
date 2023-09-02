@@ -5,6 +5,8 @@ Very simple implementation of animated line through the text for Flutter.
 This package was created because Flutter doesn't have any way to animate text decorations and
 specifically line through.
 
+<p align="center"><img src="https://github.com/Vorkytaka/animated_line_through/blob/media/gif/example.gif?raw=true" alt="Example"/></p>
+
 ### Usage
 
 Package contain 2 widget that we can use: `AnimatedLineThrough` and `AnimatedLineThroughRaw`.
