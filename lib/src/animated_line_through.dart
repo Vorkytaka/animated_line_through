@@ -268,15 +268,15 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
 
       double currentWidth = _fullTextWidth * crossed.value;
 
-      final xStart = offset.dx;
       for (int i = 0; i < metrics.length; i++) {
         final metric = metrics[i];
-        final xEnd = xStart + currentWidth.clamp(0, metric.width);
+        final xEnd = metric.left + currentWidth.clamp(0, metric.width);
         currentWidth -= metric.width;
         final double y = _verticalSegmentSize * (i + 1) +
             offset.dy -
             _verticalSegmentPadding;
-        context.canvas.drawLine(Offset(xStart, y), Offset(xEnd, y), _paint);
+        context.canvas
+            .drawLine(Offset(metric.left, y), Offset(xEnd, y), _paint);
       }
     }
   }
