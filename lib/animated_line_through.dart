@@ -1,0 +1,1 @@
+library animated_line_through;
