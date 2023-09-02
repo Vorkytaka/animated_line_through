@@ -1,35 +1,45 @@
 # Animated Line Through
 
-Very simple implementation of animated line through the text for Flutter.
+A super simple package to add animated line through text in your Flutter app!
 
-This package was created because Flutter doesn't have any way to animate text decorations and
-specifically line through.
+We created this package because Flutter currently lacks built-in support for animating text
+decorations, particularly the line through effect.
 
-<p align="center"><img src="https://github.com/Vorkytaka/animated_line_through/blob/media/gif/example.gif?raw=true" alt="Example"/></p>
+![Example](https://github.com/Vorkytaka/animated_line_through/blob/media/gif/example.gif?raw=true)
 
 ### Usage
 
-Package contain 2 widget that we can use: `AnimatedLineThrough` and `AnimatedLineThroughRaw`.
+This package provides two widgets: `AnimatedLineThrough` and `AnimatedLineThroughRaw`.
 
-Both of them expect a `child` argument, that must be a widget that use either `RenderParagraph`
-or `RenderEditable` as render object. Otherwise there will be no effect.
+Both widgets require a `child` argument, which must be a widget that uses either `RenderParagraph` or
+`RenderEditable` as its render object. Without this, the line through effect won't work.
 
-In most cases we will use `Text`, `RichText`, `TextField` or `TextFormField` widgets.
+Typically, you'll use widgets like `Text`, `RichText`, `TextField`, or `TextFormField`.
 
-`AnimatedLineThrough` is the widget that can be used out-of-the-box like any other declarative
-widget. It expect boolean `isCrossed` that indicates whenever is text should be crossed with line
-and `duration`.
+#### AnimatedLineThrough
+
+The `AnimatedLineThrough` widget is ready to use out-of-the-box, just like any other declarative
+widget. It expects two arguments: `duration` and `isCrossed`.
+
+Here's an example using `Text` as the child widget:
 
 ```dart
 AnimatedLineThrough(
   duration: const Duration(milliseconds: 500),
   isCrossed: _isCrossed,
-  child: const Text(_lorum),
-)
+  child: Text('Our text'),
+);
 ```
 
-On the other hand, `AnimatedLineThroughRaw` is widget that give you more control over line
-animation. It expect `Animation<double>` that will used as a line progress and `color` of the line.
+`duration` specifies the duration of the animation, while `isCrossed` is a boolean that indicates
+whether the text should have a line through effect or not.
+
+#### AnimatedLineThroughRaw
+
+The `AnimatedLineThroughRaw` widget gives you more control over the line animation. It expects an
+`Animation<double>` object for line progress and a `color` for the line.
+
+Here's an example using `AnimationController` and `Tween` to control the line animation:
 
 ```dart
 late final _controller = AnimationController();
@@ -43,6 +53,8 @@ late final _animation = Tween(begin: 0.0, end: 1.0).animate(
 AnimatedLineThroughRaw(
   crossed: _animation,
   color: Colors.black,
-  child: const Text(_lorum),
-)
+  child: Text('Our text'),
+);
 ```
+
+I hope this helps! Let me know if you have any further questions or issues. 🧡
