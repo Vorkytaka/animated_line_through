@@ -179,13 +179,6 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
 ///
 /// When animation is going, then we draw the crossline for each line
 /// starting from the first one and so on one after another.
-///
-/// Color of the line is change from [colorFrom] to [colorTo].
-/// When t = 0 .. 0.5, then it's [colorFrom].
-/// When t = 0.5 .. 1, then it's interpolate from [colorFrom] to [colorTo].
-/// When t = 1, then it's [colorTo].
-///
-/// If we doesn't need to animate color, then we can put same [colorFrom] and [colorTo].
 class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   final Animation<double> crossed;
 
@@ -225,16 +218,6 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   /// Count as an sum of all lines width.
   double _fullTextWidth = 0;
 
-  /// Size of each line of text.
-  ///
-  /// Text must have the same size, or this can compute wrong.
-  double _verticalSegmentSize = 0;
-
-  /// Padding that each cross line should take from bottom of text line.
-  ///
-  /// For now count as an 45% of [_verticalSegmentSize].
-  double _verticalSegmentPadding = 0;
-
   _AnimatedLineThroughRenderObject({
     required this.crossed,
     required this.color,
@@ -267,14 +250,22 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       _paint.color = color;
 
       double currentWidth = _fullTextWidth * crossed.value;
+      double currentHeight = offset.dy;
 
       for (int i = 0; i < metrics.length; i++) {
+        // We don't need to count everything, because we won't draw it
+        if (currentWidth <= 0) {
+          break;
+        }
+
         final metric = metrics[i];
+
         final xEnd = metric.left + currentWidth.clamp(0, metric.width);
         currentWidth -= metric.width;
-        final double y = _verticalSegmentSize * (i + 1) +
-            offset.dy -
-            _verticalSegmentPadding;
+
+        final double y = currentHeight + metric.height * 0.55;
+        currentHeight += metric.height;
+
         context.canvas
             .drawLine(Offset(metric.left, y), Offset(xEnd, y), _paint);
       }
@@ -348,10 +339,6 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     final metrics = painter.computeLineMetrics();
     _metrics = metrics;
     _fullTextWidth = metrics.fold<double>(0, (p, metric) => p + metric.width);
-    final textHeight =
-        metrics.fold<double>(0, (p, metric) => p + metric.height);
-    _verticalSegmentSize = textHeight / metrics.length;
-    _verticalSegmentPadding = _verticalSegmentSize * 0.45;
   }
 
   /// The method that we use when the child of current widget is [TextField] or [TextFormField].
