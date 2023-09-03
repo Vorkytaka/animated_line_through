@@ -260,14 +260,15 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
 
         final metric = metrics[i];
 
-        final xEnd = metric.left + currentWidth.clamp(0, metric.width);
+        final xStart = metric.left + offset.dx;
+        final xEnd =
+            metric.left + currentWidth.clamp(0, metric.width) + offset.dx;
         currentWidth -= metric.width;
 
         final double y = currentHeight + metric.height * 0.55;
         currentHeight += metric.height;
 
-        context.canvas
-            .drawLine(Offset(metric.left, y), Offset(xEnd, y), _paint);
+        context.canvas.drawLine(Offset(xStart, y), Offset(xEnd, y), _paint);
       }
     }
   }
@@ -349,31 +350,63 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     }
 
     RenderObject? current = child;
-    while (current != null) {
-      if (current is RenderObjectWithChildMixin) {
-        current = current.child;
-      } else if (current is SlottedContainerRenderObjectMixin) {
-        // There is no way to get child by slot,
-        // because [_RenderDecoration] and [_DecorationSlot] is private
-        // so we, as an idiots, just get first child :))
+    current = _foundRenderEditableNode(current);
+    if (current != null && current is RenderEditable) {
+      final renderBox = _findRenderBoxAroundEditable(current);
+      if (renderBox != null) {
+        _editableOffset = (renderBox.parentData as BoxParentData).offset;
+        _editableSize = renderBox.computeDryLayout(renderBox.constraints);
+      }
+      return current;
+    }
 
-        // ignore: invalid_use_of_protected_member
-        current = current.children.first;
+    return null;
+  }
 
-        // In case if text field have prefix widget we need to get offset
-        // But only direct child of [SlottedContainerRenderObjectMixin] will get this offset
-        // so, we get it here, even when this is not render object that we looking for
-        final parentData = current.parentData;
-        if (parentData is BoxParentData) {
-          _editableOffset = parentData.offset;
-        }
+  /// Go up in the render tree and try to find closest [RenderBox].
+  ///
+  /// We need the closest [RenderBox], so we can get both [Offset] and [Size].
+  /// [Offset] is used for cases, when [TextField] have anything before input.
+  /// [Size] is used for count line metrics.
+  RenderBox? _findRenderBoxAroundEditable(RenderObject? object) {
+    while (object != null) {
+      ParentData? data = object.parentData;
+      if (data is BoxParentData) {
+        return object as RenderBox;
       }
 
-      if (current is RenderEditable) {
-        // We compute size this way, because we can't read the size of this render object otherwise
-        // A render box is protect size field from reading by anyone but himself and optional parent
-        _editableSize = current.computeDryLayout(current.constraints);
-        return current;
+      object = object.parent;
+    }
+
+    return null;
+  }
+
+  /// Go through the render tree and try to find closest [RenderEditable].
+  ///
+  /// The problem is [TextField] use `_RenderDecoration` class for handle position of input field.
+  /// `_RenderDecoration` itself is private and also `_DecorationSlot` private.
+  /// So, we can't get exactly render object that we need.
+  ///
+  /// Therefore, we trying to find [RenderEditable] with recursive Depth-first search.
+  ///
+  /// At the september 2023, input is almost everytime first child.
+  /// The only case, when input is second – when we have [InputDecoration.icon].
+  ///
+  /// Complexity of this method is `O(N)`, where `N` is count of tree-nodes.
+  RenderObject? _foundRenderEditableNode(RenderObject? object) {
+    if (object is RenderEditable) {
+      return object;
+    }
+
+    if (object is RenderObjectWithChildMixin) {
+      return _foundRenderEditableNode(object.child);
+    } else if (object is SlottedContainerRenderObjectMixin) {
+      // ignore: invalid_use_of_protected_member
+      for (final child in object.children) {
+        final childObject = _foundRenderEditableNode(child);
+        if (childObject != null) {
+          return _foundRenderEditableNode(childObject);
+        }
       }
     }
 
