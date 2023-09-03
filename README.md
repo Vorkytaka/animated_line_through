@@ -57,4 +57,13 @@ AnimatedLineThroughRaw(
 );
 ```
 
+### Text Fields issues
+
+The workaround for `TextField` (and `TextFormField`) is much more complex than the workaround for simple `Text` widget.
+The problem is that those widgets doesn't use `RenderEditable` directly, but have many widget before that.
+
+So, instead of simple get `RenderEditable` we need to find it through render-tree, try to find `RenderBox` above it and then count everything we need to draw a cross line.
+
+Because of that cases with text fields is not work really well. You still can find a bugs and wrong calculations.
+
 I hope this helps! Let me know if you have any further questions or issues. 🧡
