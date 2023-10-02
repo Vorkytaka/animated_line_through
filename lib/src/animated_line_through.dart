@@ -55,6 +55,11 @@ class AnimatedLineThrough extends StatefulWidget {
   /// Defaults to null. In this case use [duration].
   final Duration? reverseDuration;
 
+  /// The width of the stroke to paint over the text
+  ///
+  /// If this is not provided, default value of 1.5 will be used.
+  final double? strokeWidth;
+
   /// Creates a animated line through.
   ///
   /// @{macro line_child}
@@ -66,6 +71,7 @@ class AnimatedLineThrough extends StatefulWidget {
     required this.isCrossed,
     required this.duration,
     this.color,
+    this.strokeWidth,
     this.curve = Curves.linear,
     this.reverseCurve,
     this.reverseDuration,
@@ -114,10 +120,12 @@ class _AnimatedLineThroughState extends State<AnimatedLineThrough>
     final Color color = widget.color ??
         DefaultTextStyle.of(context).style.color ??
         Theme.of(context).colorScheme.onSurface;
+    final double strokeWidth = widget.strokeWidth ?? 1.5;
 
     return AnimatedLineThroughRaw(
       crossed: _animation,
       color: color,
+      rawStrokeWidth: strokeWidth,
       child: widget.child,
     );
   }
@@ -142,6 +150,11 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
   /// The color of cross-line itself.
   final Color color;
 
+  /// The width of the stroke to paint over the text
+  ///
+  /// If this is not provided, default value of 1.5 will be used.d
+  final double? rawStrokeWidth;
+
   /// Creates a raw animated line through.
   ///
   /// @{macro line_child}
@@ -149,15 +162,19 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
     super.key,
     required this.crossed,
     required this.color,
+    this.rawStrokeWidth,
     super.child,
   }) : assert(child != null);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
     final isAroundTextField = child is TextField || child is TextFormField;
+    final double strokeWidth = rawStrokeWidth ?? 1.5;
+
     return _AnimatedLineThroughRenderObject(
       crossed: crossed,
       color: color,
+      strokeWidth: strokeWidth,
       isAroundTextField: isAroundTextField,
     );
   }
@@ -195,9 +212,14 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   /// Many hacks and possible bugs, but.. well.. ok. :)
   final bool isAroundTextField;
 
+  /// The width of the stroke to paint over the text
+  ///
+  /// If this is not provided, default value of 1.5 will be used.
+  final double strokeWidth;
+
   /// Main paint object.
   /// Cache it here.
-  late final Paint _paint = Paint()..strokeWidth = 1.5;
+  late final Paint _paint = Paint();
 
   /// Metrics of the child's text.
   ///
@@ -222,6 +244,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     required this.crossed,
     required this.color,
     required this.isAroundTextField,
+    required this.strokeWidth,
     RenderBox? child,
   }) : super(child) {
     crossed.addListener(_onCrossedChanged);
@@ -248,6 +271,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       }
 
       _paint.color = color;
+      _paint.strokeWidth = strokeWidth;
 
       double currentWidth = _fullTextWidth * crossed.value;
       double currentHeight = offset.dy;
