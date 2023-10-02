@@ -19,7 +19,7 @@ Typically, you'll use widgets like `Text`, `RichText`, `TextField`, or `TextForm
 #### AnimatedLineThrough
 
 The `AnimatedLineThrough` widget is ready to use out-of-the-box, just like any other declarative
-widget. It expects two arguments: `duration` and `isCrossed`.
+widget. It expects 3 arguments: `duration`, `isCrossed` and `strokeWidth`(optional). 
 
 Here's an example using `Text` as the child widget:
 
@@ -27,12 +27,14 @@ Here's an example using `Text` as the child widget:
 AnimatedLineThrough(
   duration: const Duration(milliseconds: 500),
   isCrossed: _isCrossed,
+  strokeWidth: 2,
   child: Text('Our text'),
 );
 ```
 
-`duration` specifies the duration of the animation, while `isCrossed` is a boolean that indicates
-whether the text should have a line through effect or not.
+- `duration` specifies the duration of the animation,
+- `isCrossed` is a boolean that indicates whether the text should have a line through effect or not,
+- `strokeWidth` defines the width of the line-through to paint over the text.
 
 #### AnimatedLineThroughRaw
 
@@ -53,6 +55,7 @@ late final _animation = Tween(begin: 0.0, end: 1.0).animate(
 AnimatedLineThroughRaw(
   crossed: _animation,
   color: Colors.black,
+  strokeWidth: 2.5,
   child: Text('Our text'),
 );
 ```
