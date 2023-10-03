@@ -250,6 +250,45 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     crossed.addListener(_onCrossedChanged);
   }
 
+  /// Go through the render tree and try to find closest render object of the type [N].
+  ///
+  /// We trying to find [N] with recursive Depth-first search.
+  ///
+  /// ## `Text`
+  ///
+  /// Text widget can be wrapped with some extra render object, like semantics.
+  /// In this case we still has [Text] as our child, but don't have [RenderParagraph] directly.
+  ///
+  /// ## `TextField`
+  ///
+  /// The problem with [TextField] is that it use `_RenderDecoration` class for handle position of input field.
+  /// `_RenderDecoration` itself is private and also `_DecorationSlot` private.
+  /// So, we can't get exactly render object that we need.
+  ///
+  /// At the september 2023, input is almost everytime first child.
+  /// The only case, when input is second – when we have [InputDecoration.icon].
+  ///
+  /// Complexity of this method is `O(N)`, where `N` is count of tree-nodes.
+  static N? _foundSpecificNode<N extends RenderObject>(RenderObject? object) {
+    if (object is N) {
+      return object;
+    }
+
+    if (object is RenderObjectWithChildMixin) {
+      return _foundSpecificNode<N>(object.child);
+    } else if (object is SlottedContainerRenderObjectMixin) {
+      // ignore: invalid_use_of_protected_member
+      for (final child in object.children) {
+        final childObject = _foundSpecificNode<N>(child);
+        if (childObject != null) {
+          return _foundSpecificNode<N>(childObject);
+        }
+      }
+    }
+
+    return null;
+  }
+
   @override
   void dispose() {
     crossed.removeListener(_onCrossedChanged);
@@ -301,9 +340,6 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   void performLayout() {
     super.performLayout();
 
-    // We can set [editable] as an [late],
-    // but there is no point,
-    // because we can have either [paragraph] or [editable]
     final RenderParagraph? paragraph = _foundTextRenderer();
     final RenderEditable? editable = _foundTextFieldRenderer();
 
@@ -380,15 +416,14 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       return null;
     }
 
-    RenderObject? current = child;
-    current = _foundRenderEditableNode(current);
-    if (current != null && current is RenderEditable) {
-      final renderBox = _findRenderBoxAroundEditable(current);
+    final editable = _foundSpecificNode<RenderEditable>(child);
+    if (editable != null) {
+      final renderBox = _findRenderBoxAroundEditable(editable);
       if (renderBox != null) {
         _editableOffset = (renderBox.parentData as BoxParentData).offset;
         _editableSize = renderBox.computeDryLayout(renderBox.constraints);
       }
-      return current;
+      return editable;
     }
 
     return null;
@@ -412,45 +447,21 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     return null;
   }
 
-  /// Go through the render tree and try to find closest [RenderEditable].
-  ///
-  /// The problem is [TextField] use `_RenderDecoration` class for handle position of input field.
-  /// `_RenderDecoration` itself is private and also `_DecorationSlot` private.
-  /// So, we can't get exactly render object that we need.
-  ///
-  /// Therefore, we trying to find [RenderEditable] with recursive Depth-first search.
-  ///
-  /// At the september 2023, input is almost everytime first child.
-  /// The only case, when input is second – when we have [InputDecoration.icon].
-  ///
-  /// Complexity of this method is `O(N)`, where `N` is count of tree-nodes.
-  RenderObject? _foundRenderEditableNode(RenderObject? object) {
-    if (object is RenderEditable) {
-      return object;
-    }
-
-    if (object is RenderObjectWithChildMixin) {
-      return _foundRenderEditableNode(object.child);
-    } else if (object is SlottedContainerRenderObjectMixin) {
-      // ignore: invalid_use_of_protected_member
-      for (final child in object.children) {
-        final childObject = _foundRenderEditableNode(child);
-        if (childObject != null) {
-          return _foundRenderEditableNode(childObject);
-        }
-      }
-    }
-
-    return null;
-  }
-
   /// The method that we use when the child of current widget is the [Text].
   /// Or any other widget that use [RenderParagraph] under the hood.
+  ///
+  /// Funny, but [Icon] widget is also use [RenderParagraph], because each icon is some char in specific font.
+  /// So, because of that, we can animate line through [Icon] widget.
   RenderParagraph? _foundTextRenderer() {
-    if (child != null && child is RenderParagraph) {
+    if (isAroundTextField) {
+      // If our child is `RenderEditable` then we will find it later.
+      return null;
+    } else if (child != null && child is RenderParagraph) {
+      // Check if current child is already what we are looking for.
       return child as RenderParagraph;
     } else {
-      return null;
+      // Otherwise let's try find it with.
+      return _foundSpecificNode<RenderParagraph>(child);
     }
   }
 }
