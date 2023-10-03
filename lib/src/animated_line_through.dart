@@ -58,7 +58,7 @@ class AnimatedLineThrough extends StatefulWidget {
   /// The width of the stroke to paint over the text
   ///
   /// If this is not provided, default value of 1.5 will be used.
-  final double? strokeWidth;
+  final double strokeWidth;
 
   /// Creates a animated line through.
   ///
@@ -71,7 +71,7 @@ class AnimatedLineThrough extends StatefulWidget {
     required this.isCrossed,
     required this.duration,
     this.color,
-    this.strokeWidth,
+    this.strokeWidth = 1.5,
     this.curve = Curves.linear,
     this.reverseCurve,
     this.reverseDuration,
@@ -120,12 +120,11 @@ class _AnimatedLineThroughState extends State<AnimatedLineThrough>
     final Color color = widget.color ??
         DefaultTextStyle.of(context).style.color ??
         Theme.of(context).colorScheme.onSurface;
-    final double strokeWidth = widget.strokeWidth ?? 1.5;
 
     return AnimatedLineThroughRaw(
       crossed: _animation,
       color: color,
-      rawStrokeWidth: strokeWidth,
+      strokeWidth: widget.strokeWidth,
       child: widget.child,
     );
   }
@@ -153,7 +152,7 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
   /// The width of the stroke to paint over the text
   ///
   /// If this is not provided, default value of 1.5 will be used.d
-  final double? rawStrokeWidth;
+  final double strokeWidth;
 
   /// Creates a raw animated line through.
   ///
@@ -162,14 +161,13 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
     super.key,
     required this.crossed,
     required this.color,
-    this.rawStrokeWidth,
+    this.strokeWidth = 1.5,
     super.child,
   }) : assert(child != null);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
     final isAroundTextField = child is TextField || child is TextFormField;
-    final double strokeWidth = rawStrokeWidth ?? 1.5;
 
     return _AnimatedLineThroughRenderObject(
       crossed: crossed,
@@ -187,6 +185,7 @@ class AnimatedLineThroughRaw extends SingleChildRenderObjectWidget {
   ) {
     super.updateRenderObject(context, renderObject);
     renderObject.color = color;
+    renderObject.strokeWidth = strokeWidth;
   }
 }
 
@@ -215,7 +214,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   /// The width of the stroke to paint over the text
   ///
   /// If this is not provided, default value of 1.5 will be used.
-  final double strokeWidth;
+  double strokeWidth;
 
   /// Main paint object.
   /// Cache it here.
