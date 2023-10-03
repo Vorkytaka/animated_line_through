@@ -1,3 +1,8 @@
+## 1.0.3
+
+* Add `strokeWidth` params. Thanks to the @milindgoel15.
+* Fix main reason why `TextField` can draw lines wrong.
+
 ## 1.0.2
 
 * Fixes around `TextField` and `TextFormField`
