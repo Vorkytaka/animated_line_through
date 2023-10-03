@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -316,7 +317,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     final StrutStyle? strutStyle;
     final TextWidthBasis? textWidthBasis;
     final TextHeightBehavior? textHeightBehavior;
-    final Size textSize;
+    final double maxWidth;
     if (paragraph != null) {
       text = paragraph.text;
       textAlign = paragraph.textAlign;
@@ -328,7 +329,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       strutStyle = paragraph.strutStyle;
       textWidthBasis = paragraph.textWidthBasis;
       textHeightBehavior = paragraph.textHeightBehavior;
-      textSize = paragraph.textSize;
+      maxWidth = paragraph.textSize.width;
     } else if (editable != null && _editableSize != null) {
       text = editable.text;
       textAlign = editable.textAlign;
@@ -340,8 +341,15 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       strutStyle = editable.strutStyle;
       textWidthBasis = editable.textWidthBasis;
       textHeightBehavior = editable.textHeightBehavior;
-      // Also, editable have no text size, so we count it beforehand
-      textSize = _editableSize!;
+
+      // This is copy of width compute logic from `_RenderEditable`
+      // With some literal, because values is private
+      final availableMaxWidth =
+          max(0.0, _editableSize!.width - 1 - editable.cursorWidth);
+      final textMaxWidth =
+          editable.maxLines != 1 ? availableMaxWidth : double.infinity;
+
+      maxWidth = textMaxWidth;
     } else {
       return;
     }
@@ -358,7 +366,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       textWidthBasis: textWidthBasis,
       textHeightBehavior: textHeightBehavior,
     );
-    painter.layout(maxWidth: textSize.width);
+    painter.layout(maxWidth: maxWidth);
 
     final metrics = painter.computeLineMetrics();
     _metrics = metrics;
