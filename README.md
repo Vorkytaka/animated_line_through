@@ -67,6 +67,17 @@ The problem is that those widgets doesn't use `RenderEditable` directly, but hav
 
 So, instead of simple get `RenderEditable` we need to find it through render-tree, try to find `RenderBox` above it and then count everything we need to draw a cross line.
 
-Because of that cases with text fields is not work really well. You still can find a bugs and wrong calculations.
+But for you it's just that simple as use with simple `Text` widget, just wrap your `TextField` (or `TextFormField`) with `AnimatedLineThrough`:
+
+```dart
+AnimatedLineThrough(
+  duration: const Duration(milliseconds: 500),
+  isCrossed: _isCrossed,
+  strokeWidth: 2,
+  child: TextField(),
+);
+```
+
+As the version 1.0.3 we fix main problem with editable widgets, so from now on it's count width of each line correctly.
 
 I hope this helps! Let me know if you have any further questions or issues. 🧡
