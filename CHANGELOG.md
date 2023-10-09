@@ -1,3 +1,7 @@
+## 1.0.4-rc
+
+* Use the same search for `RenderParagraph` as for `RenderEditable` for the cases, when `RenderParagraph` is not direct child.
+
 ## 1.0.3
 
 * Add `strokeWidth` params. Thanks to the @milindgoel15.
