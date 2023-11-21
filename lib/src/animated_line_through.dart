@@ -439,6 +439,10 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       ParentData? data = object.parentData;
       if (data is BoxParentData) {
         return object as RenderBox;
+      } else if (object is _AnimatedLineThroughRenderObject) {
+        // If we reach our main render object,
+        // then there is no `BoxParentData`
+        return null;
       }
 
       object = object.parent;
