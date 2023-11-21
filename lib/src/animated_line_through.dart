@@ -346,7 +346,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     final InlineSpan? text;
     final TextAlign? textAlign;
     final TextDirection? textDirection;
-    final double? textScaleFactor;
+    final TextScaler? textScaler;
     final int? maxLines;
     final String? ellipsis;
     final Locale? locale;
@@ -358,7 +358,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       text = paragraph.text;
       textAlign = paragraph.textAlign;
       textDirection = paragraph.textDirection;
-      textScaleFactor = paragraph.textScaleFactor;
+      textScaler = paragraph.textScaler;
       maxLines = paragraph.maxLines;
       ellipsis = paragraph.overflow == TextOverflow.ellipsis ? '\u2026' : null;
       locale = paragraph.locale;
@@ -370,7 +370,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       text = editable.text;
       textAlign = editable.textAlign;
       textDirection = editable.textDirection;
-      textScaleFactor = editable.textScaleFactor;
+      textScaler = editable.textScaler;
       maxLines = editable.maxLines;
       ellipsis = null; // Editable have no ellipsis
       locale = editable.locale;
@@ -394,7 +394,7 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
       text: text,
       textAlign: textAlign,
       textDirection: textDirection,
-      textScaleFactor: textScaleFactor,
+      textScaler: textScaler,
       maxLines: maxLines,
       ellipsis: ellipsis,
       locale: locale,
