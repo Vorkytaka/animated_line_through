@@ -1,10 +1,8 @@
-## 1.0.5-rc
-
-* Use the same search for `RenderParagraph` as for `RenderEditable` for the cases, when `RenderParagraph` is not direct child.
-
 ## 1.0.4
 
-* Fix Flutter 3.16.0 issues
+* Fix Flutter 3.16.0 issues.
+* Use the same search for `RenderParagraph` as for `RenderEditable` for the cases, when `RenderParagraph` is not direct child.
+* Stop search for editable parent when we found our node.
 
 ## 1.0.3
 
