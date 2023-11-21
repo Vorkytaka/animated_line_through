@@ -1,6 +1,10 @@
-## 1.0.4-rc
+## 1.0.5-rc
 
 * Use the same search for `RenderParagraph` as for `RenderEditable` for the cases, when `RenderParagraph` is not direct child.
+
+## 1.0.4
+
+* Fix Flutter 3.16.0 issues
 
 ## 1.0.3
 
