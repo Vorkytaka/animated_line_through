@@ -226,6 +226,16 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
   /// Count on the [performLayout] phase.
   List<ui.LineMetrics>? _metrics;
 
+  /// A text direction of the child.
+  ///
+  /// We need it to handle RTL stroke.
+  ui.TextDirection? _textDirection;
+
+  /// A text align of the child.
+  ///
+  /// We need it to calculate Rtl adjustment
+  ui.TextAlign _textAlign = ui.TextAlign.start;
+
   /// An offset of the [RenderEditable] that was set by it parent.
   ///
   /// We can get it not from the [RenderEditable] itself, but from [RenderObject] above it.
@@ -322,10 +332,15 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
         }
 
         final metric = metrics[i];
+        double xStart = metric.left + offset.dx;
+        double xEnd = (metric.left + currentWidth.clamp(0, metric.width)) + offset.dx;
 
-        final xStart = metric.left + offset.dx;
-        final xEnd =
-            metric.left + currentWidth.clamp(0, metric.width) + offset.dx;
+        if (_textDirection == ui.TextDirection.rtl) {
+          final adjustedDxOffset =  _adjustLeftForRtl(metric, _textAlign) + offset.dx;
+          xStart = metric.width + adjustedDxOffset;
+          xEnd = ( metric.width - currentWidth.clamp(0, metric.width)) + adjustedDxOffset;
+        }
+
         currentWidth -= metric.width;
 
         final double y = currentHeight + metric.height * 0.55;
@@ -406,6 +421,8 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
 
     final metrics = painter.computeLineMetrics();
     _metrics = metrics;
+    _textDirection = textDirection;
+    _textAlign = textAlign;
     _fullTextWidth = metrics.fold<double>(0, (p, metric) => p + metric.width);
   }
 
@@ -466,6 +483,18 @@ class _AnimatedLineThroughRenderObject extends RenderProxyBox {
     } else {
       // Otherwise let's try find it with.
       return _foundSpecificNode<RenderParagraph>(child);
+    }
+  }
+
+  double _adjustLeftForRtl(ui.LineMetrics metric, ui.TextAlign align) {
+    switch (align) {
+      case TextAlign.center:
+        return (size.width - metric.width) / 2;
+      case TextAlign.right:
+      case TextAlign.start:
+        return size.width - metric.width;
+      default:
+        return 0;
     }
   }
 }
