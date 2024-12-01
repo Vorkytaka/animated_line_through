@@ -7,6 +7,9 @@ void main() {
 
 const _lorum =
     "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
+const _lorumAr =
+    "هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها.";
+const _lorumArShort = "لوريم إيبسوم";
 
 enum _Tabs {
   simple,
@@ -119,6 +122,26 @@ class _SimpleState extends State<_Simple> {
           isCrossed: _isCrossed,
           child: const Text(_lorum),
         ),
+        const Divider(height: 32),
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedLineThrough(
+                duration: const Duration(milliseconds: 500),
+                isCrossed: _isCrossed,
+                child: const Text(_lorumAr),
+              ),
+              const Divider(),
+              AnimatedLineThrough(
+                duration: const Duration(milliseconds: 500),
+                isCrossed: _isCrossed,
+                child: const Text(_lorumArShort),
+              ),
+            ],
+          ),
+        )
       ],
     );
   }
